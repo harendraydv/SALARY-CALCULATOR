@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 body{
@@ -28,7 +29,6 @@ h1{
     color:#1e3a8a;
 }
 
-/* CLEAN GRID (COLUMN STYLE LIKE FORM SHEET) */
 .grid{
     display:grid;
     grid-template-columns:repeat(2,1fr);
@@ -46,7 +46,6 @@ input{
     padding:10px;
     border:1px solid #ccc;
     border-radius:6px;
-    margin-top:5px;
 }
 
 button{
@@ -117,17 +116,21 @@ button:hover{
 
 <h1>Salary Slip System</h1>
 
-<!-- CLEAN ENTRY FORM -->
 <div class="grid">
 
 <div>
 <label>Employee Name</label>
-<input id="name" placeholder="Enter name">
+<input id="name">
+</div>
+
+<div>
+<label>Employee ID</label>
+<input id="empid">
 </div>
 
 <div>
 <label>Department Name</label>
-<input id="dept" placeholder="Enter department">
+<input id="dept">
 </div>
 
 <div>
@@ -141,12 +144,12 @@ button:hover{
 </div>
 
 <div>
-<label>HRA (₹)</label>
+<label>HRA / Bairak Allowance (₹)</label>
 <input id="hra" value="0">
 </div>
 
 <div>
-<label>TA (₹)</label>
+<label>Food Allowance / Other Allowance (₹)</label>
 <input id="ta" value="0">
 </div>
 
@@ -178,6 +181,7 @@ button:hover{
 
 <div class="info">
 <div><b>Name:</b> <span id="s_name"></span></div>
+<div><b>Employee ID:</b> <span id="s_empid"></span></div>
 <div><b>Department:</b> <span id="s_dept"></span></div>
 <div><b>Basic Pay:</b> ₹ <span id="s_basic"></span></div>
 <div><b>DA %:</b> <span id="s_daP"></span></div>
@@ -209,13 +213,13 @@ button:hover{
 </tr>
 
 <tr>
-<td>HRA</td>
+<td>HRA / Bairak Allowance</td>
 <td id="s_hra"></td>
 <td></td><td></td>
 </tr>
 
 <tr>
-<td>TA</td>
+<td>Food Allowance / Other Allowance</td>
 <td id="s_ta"></td>
 <td></td><td></td>
 </tr>
@@ -255,6 +259,7 @@ function format(n){
 function calculate(){
 
     let name = document.getElementById("name").value;
+    let empid = document.getElementById("empid").value;
     let dept = document.getElementById("dept").value;
 
     let basic = +document.getElementById("basic").value;
@@ -271,10 +276,12 @@ function calculate(){
     let totalDed = nps + other;
     let net = gross - totalDed;
 
-    data = {name,dept,basic,da,daP,hra,ta,allow,other,nps,gross,totalDed,net};
+    data = {name,empid,dept,basic,da,daP,hra,ta,allow,other,nps,gross,totalDed,net};
 
     document.getElementById("s_name").innerText = name;
+    document.getElementById("s_empid").innerText = empid;
     document.getElementById("s_dept").innerText = dept;
+
     document.getElementById("s_basic").innerText = format(basic);
     document.getElementById("s_basic2").innerText = format(basic);
     document.getElementById("s_daP").innerText = daP + "%";
@@ -294,21 +301,23 @@ function calculate(){
     document.getElementById("slip").style.display = "block";
 }
 
-// PDF
+// ✅ EXACT SAME DESIGN PDF
 function downloadPDF(){
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
 
-    doc.text("PAY SLIP", 80, 10);
-    doc.text("Name: " + data.name, 10, 30);
-    doc.text("Dept: " + data.dept, 10, 40);
-    doc.text("Basic: " + data.basic, 10, 50);
-    doc.text("DA: " + data.da, 10, 60);
-    doc.text("Gross: " + data.gross, 10, 70);
-    doc.text("NPS: " + data.nps, 10, 80);
-    doc.text("Net: " + data.net, 10, 90);
+    const slip = document.getElementById("slip");
 
-    doc.save("salary-slip.pdf");
+    html2canvas(slip).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF("p","mm","a4");
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save("salary-slip.pdf");
+    });
 }
 
 </script>
