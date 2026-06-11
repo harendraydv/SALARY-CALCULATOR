@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Salary Slip System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{
+    font-family:Arial;
+    background:#eef2ff;
+    padding:20px;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+h1{
+    text-align:center;
+    color:#1e3a8a;
+}
+
+/* CLEAN GRID (COLUMN STYLE LIKE FORM SHEET) */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+    margin-top:20px;
+}
+
+label{
+    font-weight:bold;
+    font-size:13px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    margin-top:5px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+/* SLIP */
+.slip{
+    margin-top:25px;
+    border:2px solid #000;
+    padding:20px;
+    background:white;
+}
+
+.header{
+    text-align:center;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.sub{
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.info{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:6px;
+    margin-top:10px;
+}
+
+.table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+.table th, .table td{
+    border:1px solid #000;
+    padding:8px;
+}
+
+.final{
+    text-align:right;
+    margin-top:15px;
+    font-size:18px;
+    font-weight:bold;
+    color:green;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Salary Slip System</h1>
+
+<!-- CLEAN ENTRY FORM -->
+<div class="grid">
+
+<div>
+<label>Employee Name</label>
+<input id="name" placeholder="Enter name">
+</div>
+
+<div>
+<label>Department Name</label>
+<input id="dept" placeholder="Enter department">
+</div>
+
+<div>
+<label>Basic Pay (₹)</label>
+<input id="basic" value="24500">
+</div>
+
+<div>
+<label>DA %</label>
+<input id="da" value="60">
+</div>
+
+<div>
+<label>HRA (₹)</label>
+<input id="hra" value="0">
+</div>
+
+<div>
+<label>TA (₹)</label>
+<input id="ta" value="0">
+</div>
+
+<div>
+<label>Other Allowance (₹)</label>
+<input id="allowance" value="0">
+</div>
+
+<div>
+<label>Other Deduction (₹)</label>
+<input id="deduction" value="0">
+</div>
+
+<div>
+<label>NPS %</label>
+<input id="nps" value="10">
+</div>
+
+</div>
+
+<button onclick="calculate()">Generate Salary Slip</button>
+<button onclick="downloadPDF()">Download PDF</button>
+
+<!-- SLIP -->
+<div class="slip" id="slip" style="display:none;">
+
+<div class="header">PAY SLIP</div>
+<div class="sub">Monthly Salary Statement</div>
+
+<div class="info">
+<div><b>Name:</b> <span id="s_name"></span></div>
+<div><b>Department:</b> <span id="s_dept"></span></div>
+<div><b>Basic Pay:</b> ₹ <span id="s_basic"></span></div>
+<div><b>DA %:</b> <span id="s_daP"></span></div>
+</div>
+
+<table class="table">
+
+<tr>
+<th>Earnings</th>
+<th>Amount</th>
+<th>Deductions</th>
+<th>Amount</th>
+</tr>
+
+<tr>
+<td>Basic Pay</td>
+<td id="s_basic2"></td>
+
+<td>NPS</td>
+<td id="s_nps"></td>
+</tr>
+
+<tr>
+<td>Dearness Allowance</td>
+<td id="s_da"></td>
+
+<td>Other Deduction</td>
+<td id="s_other"></td>
+</tr>
+
+<tr>
+<td>HRA</td>
+<td id="s_hra"></td>
+<td></td><td></td>
+</tr>
+
+<tr>
+<td>TA</td>
+<td id="s_ta"></td>
+<td></td><td></td>
+</tr>
+
+<tr>
+<td>Other Allowance</td>
+<td id="s_allow"></td>
+<td></td><td></td>
+</tr>
+
+<tr>
+<th>Total Earnings</th>
+<th id="s_gross"></th>
+
+<th>Total Deduction</th>
+<th id="s_totalded"></th>
+</tr>
+
+</table>
+
+<div class="final">
+Take Home Pay: ₹ <span id="s_net"></span>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let data = {};
+
+function format(n){
+    return Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});
+}
+
+function calculate(){
+
+    let name = document.getElementById("name").value;
+    let dept = document.getElementById("dept").value;
+
+    let basic = +document.getElementById("basic").value;
+    let daP = +document.getElementById("da").value;
+    let hra = +document.getElementById("hra").value;
+    let ta = +document.getElementById("ta").value;
+    let allow = +document.getElementById("allowance").value;
+    let other = +document.getElementById("deduction").value;
+    let npsP = +document.getElementById("nps").value;
+
+    let da = (basic * daP)/100;
+    let gross = basic + da + hra + ta + allow;
+    let nps = (basic + da) * (npsP/100);
+    let totalDed = nps + other;
+    let net = gross - totalDed;
+
+    data = {name,dept,basic,da,daP,hra,ta,allow,other,nps,gross,totalDed,net};
+
+    document.getElementById("s_name").innerText = name;
+    document.getElementById("s_dept").innerText = dept;
+    document.getElementById("s_basic").innerText = format(basic);
+    document.getElementById("s_basic2").innerText = format(basic);
+    document.getElementById("s_daP").innerText = daP + "%";
+
+    document.getElementById("s_da").innerText = format(da);
+    document.getElementById("s_hra").innerText = format(hra);
+    document.getElementById("s_ta").innerText = format(ta);
+    document.getElementById("s_allow").innerText = format(allow);
+
+    document.getElementById("s_nps").innerText = format(nps);
+    document.getElementById("s_other").innerText = format(other);
+
+    document.getElementById("s_gross").innerText = format(gross);
+    document.getElementById("s_totalded").innerText = format(totalDed);
+    document.getElementById("s_net").innerText = format(net);
+
+    document.getElementById("slip").style.display = "block";
+}
+
+// PDF
+function downloadPDF(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text("PAY SLIP", 80, 10);
+    doc.text("Name: " + data.name, 10, 30);
+    doc.text("Dept: " + data.dept, 10, 40);
+    doc.text("Basic: " + data.basic, 10, 50);
+    doc.text("DA: " + data.da, 10, 60);
+    doc.text("Gross: " + data.gross, 10, 70);
+    doc.text("NPS: " + data.nps, 10, 80);
+    doc.text("Net: " + data.net, 10, 90);
+
+    doc.save("salary-slip.pdf");
+}
+
+</script>
+
+</body>
+</html>
