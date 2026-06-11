@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Salary Slip System</title>
+<title>Salary Slip</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -63,7 +63,6 @@ button:hover{
     background:#1d4ed8;
 }
 
-/* SLIP */
 .slip{
     margin-top:25px;
     border:2px solid #000;
@@ -114,7 +113,7 @@ button:hover{
 
 <div class="container">
 
-<h1>Salary Slip System</h1>
+<h1>Salary Slip</h1>
 
 <div class="grid">
 
@@ -134,13 +133,18 @@ button:hover{
 </div>
 
 <div>
+<label>Salary Month</label>
+<input id="month" placeholder="e.g. June 2026">
+</div>
+
+<div>
 <label>Basic Pay (₹)</label>
-<input id="basic" value="24500">
+<input id="basic">
 </div>
 
 <div>
 <label>DA %</label>
-<input id="da" value="60">
+<input id="da">
 </div>
 
 <div>
@@ -149,7 +153,7 @@ button:hover{
 </div>
 
 <div>
-<label>Food Allowance / Other Allowance (₹)</label>
+<label>Food / Other Allowance (₹)</label>
 <input id="ta" value="0">
 </div>
 
@@ -173,7 +177,6 @@ button:hover{
 <button onclick="calculate()">Generate Salary Slip</button>
 <button onclick="downloadPDF()">Download PDF</button>
 
-<!-- SLIP -->
 <div class="slip" id="slip" style="display:none;">
 
 <div class="header">PAY SLIP</div>
@@ -183,12 +186,12 @@ button:hover{
 <div><b>Name:</b> <span id="s_name"></span></div>
 <div><b>Employee ID:</b> <span id="s_empid"></span></div>
 <div><b>Department:</b> <span id="s_dept"></span></div>
+<div><b>Month:</b> <span id="s_month"></span></div>
 <div><b>Basic Pay:</b> ₹ <span id="s_basic"></span></div>
 <div><b>DA %:</b> <span id="s_daP"></span></div>
 </div>
 
 <table class="table">
-
 <tr>
 <th>Earnings</th>
 <th>Amount</th>
@@ -199,7 +202,6 @@ button:hover{
 <tr>
 <td>Basic Pay</td>
 <td id="s_basic2"></td>
-
 <td>NPS</td>
 <td id="s_nps"></td>
 </tr>
@@ -207,19 +209,18 @@ button:hover{
 <tr>
 <td>Dearness Allowance</td>
 <td id="s_da"></td>
-
 <td>Other Deduction</td>
 <td id="s_other"></td>
 </tr>
 
 <tr>
-<td>HRA / Bairak Allowance</td>
+<td>HRA</td>
 <td id="s_hra"></td>
 <td></td><td></td>
 </tr>
 
 <tr>
-<td>Food Allowance / Other Allowance</td>
+<td>Food / Other Allowance</td>
 <td id="s_ta"></td>
 <td></td><td></td>
 </tr>
@@ -231,17 +232,15 @@ button:hover{
 </tr>
 
 <tr>
-<th>Total Earnings</th>
+<th>Gross Pay</th>
 <th id="s_gross"></th>
-
 <th>Total Deduction</th>
 <th id="s_totalded"></th>
 </tr>
-
 </table>
 
 <div class="final">
-Take Home Pay: ₹ <span id="s_net"></span>
+Net Pay: ₹ <span id="s_net"></span>
 </div>
 
 </div>
@@ -250,10 +249,8 @@ Take Home Pay: ₹ <span id="s_net"></span>
 
 <script>
 
-let data = {};
-
 function format(n){
-    return Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});
+    return Number(n || 0).toLocaleString('en-IN',{maximumFractionDigits:2});
 }
 
 function calculate(){
@@ -261,14 +258,15 @@ function calculate(){
     let name = document.getElementById("name").value;
     let empid = document.getElementById("empid").value;
     let dept = document.getElementById("dept").value;
+    let month = document.getElementById("month").value;
 
-    let basic = +document.getElementById("basic").value;
-    let daP = +document.getElementById("da").value;
-    let hra = +document.getElementById("hra").value;
-    let ta = +document.getElementById("ta").value;
-    let allow = +document.getElementById("allowance").value;
-    let other = +document.getElementById("deduction").value;
-    let npsP = +document.getElementById("nps").value;
+    let basic = +document.getElementById("basic").value || 0;
+    let daP = +document.getElementById("da").value || 0;
+    let hra = +document.getElementById("hra").value || 0;
+    let ta = +document.getElementById("ta").value || 0;
+    let allow = +document.getElementById("allowance").value || 0;
+    let other = +document.getElementById("deduction").value || 0;
+    let npsP = +document.getElementById("nps").value || 0;
 
     let da = (basic * daP)/100;
     let gross = basic + da + hra + ta + allow;
@@ -276,11 +274,10 @@ function calculate(){
     let totalDed = nps + other;
     let net = gross - totalDed;
 
-    data = {name,empid,dept,basic,da,daP,hra,ta,allow,other,nps,gross,totalDed,net};
-
     document.getElementById("s_name").innerText = name;
     document.getElementById("s_empid").innerText = empid;
     document.getElementById("s_dept").innerText = dept;
+    document.getElementById("s_month").innerText = month;
 
     document.getElementById("s_basic").innerText = format(basic);
     document.getElementById("s_basic2").innerText = format(basic);
@@ -301,7 +298,6 @@ function calculate(){
     document.getElementById("slip").style.display = "block";
 }
 
-// ✅ EXACT SAME DESIGN PDF
 function downloadPDF(){
 
     const slip = document.getElementById("slip");
