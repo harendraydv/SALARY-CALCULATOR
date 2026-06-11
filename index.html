@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7th CPC Salary Calculator</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    padding:20px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+h1{
+    text-align:center;
+    color:#1e3a8a;
+    margin-bottom:20px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:15px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+label{
+    font-weight:bold;
+    margin-bottom:5px;
+}
+
+input,select{
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:20px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.results{
+    margin-top:25px;
+    padding:20px;
+    background:#eef4ff;
+    border-radius:10px;
+}
+
+.result-item{
+    margin:10px 0;
+    font-size:18px;
+}
+
+.highlight{
+    color:#15803d;
+    font-weight:bold;
+    font-size:22px;
+}
+
+.footer{
+    text-align:center;
+    margin-top:20px;
+    color:#666;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>7th CPC Salary Calculator</h1>
+
+<div class="grid">
+
+<div class="form-group">
+<label>Grade Pay (Pre-7th CPC)</label>
+<select id="gradePay">
+<option value="1800">1800</option>
+<option value="1900">1900</option>
+<option value="2000">2000</option>
+<option value="2400">2400</option>
+<option value="2800">2800</option>
+<option value="4200">4200</option>
+<option value="4600">4600</option>
+<option value="4800">4800</option>
+<option value="5400">5400</option>
+<option value="6600">6600</option>
+<option value="7600">7600</option>
+<option value="8700">8700</option>
+<option value="8900">8900</option>
+<option value="10000">10000</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Basic Pay (₹)</label>
+<input type="number" id="basicPay" placeholder="Enter Basic Pay">
+</div>
+
+<div class="form-group">
+<label>Current DA (%)</label>
+<input type="number" id="currentDA" value="55">
+</div>
+
+<div class="form-group">
+<label>Previous DA (%)</label>
+<input type="number" id="previousDA" value="53">
+</div>
+
+<div class="form-group">
+<label>Expected DA (%)</label>
+<input type="number" id="expectedDA" value="58">
+</div>
+
+<div class="form-group">
+<label>Other Allowances (₹)</label>
+<input type="number" id="allowance" value="0">
+</div>
+
+<div class="form-group">
+<label>NPS Deduction</label>
+<select id="nps">
+<option value="yes">Yes</option>
+<option value="no">No</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Other Deductions (₹)</label>
+<input type="number" id="otherDeduction" value="0">
+</div>
+
+</div>
+
+<button onclick="calculateSalary()">Calculate Salary</button>
+
+<div class="results" id="result" style="display:none;">
+
+<div class="result-item">Current DA Amount: ₹ <span id="currentDAAmt"></span></div>
+<div class="result-item">Previous DA Amount: ₹ <span id="previousDAAmt"></span></div>
+<div class="result-item">Expected DA Amount: ₹ <span id="expectedDAAmt"></span></div>
+
+<hr style="margin:15px 0;">
+
+<div class="result-item">Gross Salary (Current DA): ₹ <span id="grossSalary"></span></div>
+<div class="result-item">NPS Deduction: ₹ <span id="npsDeduction"></span></div>
+<div class="result-item">Total Deductions: ₹ <span id="totalDeduction"></span></div>
+
+<hr style="margin:15px 0;">
+
+<div class="result-item highlight">
+Net Salary: ₹ <span id="netSalary"></span>
+</div>
+
+</div>
+
+<div class="footer">
+7th CPC Salary Calculator
+</div>
+
+</div>
+
+<script>
+
+function formatNumber(num){
+    return Number(num).toLocaleString('en-IN',{
+        maximumFractionDigits:2
+    });
+}
+
+function calculateSalary(){
+
+    let basicPay = parseFloat(document.getElementById("basicPay").value) || 0;
+
+    let currentDA = parseFloat(document.getElementById("currentDA").value) || 0;
+    let previousDA = parseFloat(document.getElementById("previousDA").value) || 0;
+    let expectedDA = parseFloat(document.getElementById("expectedDA").value) || 0;
+
+    let allowance = parseFloat(document.getElementById("allowance").value) || 0;
+    let otherDeduction = parseFloat(document.getElementById("otherDeduction").value) || 0;
+
+    let currentDAAmt = basicPay * currentDA / 100;
+    let previousDAAmt = basicPay * previousDA / 100;
+    let expectedDAAmt = basicPay * expectedDA / 100;
+
+    let grossSalary = basicPay + currentDAAmt + allowance;
+
+    let npsDeduction = 0;
+
+    if(document.getElementById("nps").value === "yes"){
+        npsDeduction = basicPay * 0.10;
+    }
+
+    let totalDeduction = npsDeduction + otherDeduction;
+
+    let netSalary = grossSalary - totalDeduction;
+
+    document.getElementById("currentDAAmt").innerText = formatNumber(currentDAAmt);
+    document.getElementById("previousDAAmt").innerText = formatNumber(previousDAAmt);
+    document.getElementById("expectedDAAmt").innerText = formatNumber(expectedDAAmt);
+
+    document.getElementById("grossSalary").innerText = formatNumber(grossSalary);
+    document.getElementById("npsDeduction").innerText = formatNumber(npsDeduction);
+    document.getElementById("totalDeduction").innerText = formatNumber(totalDeduction);
+    document.getElementById("netSalary").innerText = formatNumber(netSalary);
+
+    document.getElementById("result").style.display = "block";
+}
+
+</script>
+
+</body>
+</html>
